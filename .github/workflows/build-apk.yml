@@ -19,7 +19,18 @@ jobs:
         id: proj
         run: |
           S=$(find . -name settings.gradle -not -path './.git/*' | head -n1)
-          if [ -z "$S" ]; then echo "settings.gradle not found"; exit 1; fi
+          if [ -z "$S" ]; then
+            Z=$(find . -name '*.zip' -not -path './.git/*' | head -n1)
+            if [ -n "$Z" ]; then
+              mkdir -p _src && unzip -q "$Z" -d _src
+              S=$(find _src -name settings.gradle | head -n1)
+            fi
+          fi
+          if [ -z "$S" ]; then
+            echo "settings.gradle not found. Repo files:"
+            ls -R | head -50
+            exit 1
+          fi
           echo "dir=$(dirname "$S")" >> "$GITHUB_OUTPUT"
 
       - name: Set up JDK 17
